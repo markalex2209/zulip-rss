@@ -13,14 +13,22 @@ jobs:
          feedparser \
          markdownify \
          git+https://github.com/i-ky/python-zulip-api.git@markdownify#subdirectory=zulip
-        $HOME/.local/share/zulip/integrations/rss/rss-bot \
-         --markdownify \
-         --site '${{ secrets.zulip_organization_url }}' \
-         --api-key '${{ secrets.zulip_bot_key }}' \
-         --user '${{ secrets.zulip_bot_email }}' \
-         --feed-file rss-feeds \
-         --data-dir data/ \
-         --stream RSS
+        
+        for FEED in feeds/*; do
+          echo "Processing $FEED"
+          TOPIC=$(cat "$FEED/topic-name")
+
+          $HOME/.local/share/zulip/integrations/rss/rss-bot \
+          --markdownify \
+          --site '${{ secrets.zulip_organization_url }}' \
+          --api-key '${{ secrets.zulip_bot_key }}' \
+          --user '${{ secrets.zulip_bot_email }}' \
+          --feed-file "$FEED/rss-feeds" \
+          --data-dir "$FEED/" \
+          --topic "$TOPIC" \
+          --stream RSS
+        done
+
         git config --global user.email "zulip-rss-bot@users.noreply.github.com"
         git config --global user.name "RSS Bot"
         git add --all
